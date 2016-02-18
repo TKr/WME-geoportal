@@ -13,7 +13,7 @@
 // ==/UserScript==
 
 /**
- * Visit https://github.com/TKr/WME-geoportal
+ * Source code: https://github.com/TKr/WME-geoportal
  */
 
 function GEOPORTAL_bootstrap()
