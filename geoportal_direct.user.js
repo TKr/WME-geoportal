@@ -199,7 +199,13 @@ function geoportal_run() {
                 getFullRequestString: getFullRequestString4326
             }
         );
-        I18n.translations.en.layers.name["orto1"] = "Geoportal - ortofoto";
+        if ("undefined" != typeof I18n.translations.en) {
+           I18n.translations.en.layers.name["orto1"] = "Geoportal - ortofoto";
+        }
+
+        if ("undefined" != typeof I18n.translations.pl) {
+           I18n.translations.pl.layers.name["orto1"] = "Geoportal - ortofoto";
+        }
 
         //geoportal_prng
         var geop_prng = new OpenLayers.Layer.WMS(
@@ -223,7 +229,13 @@ function geoportal_run() {
                 getFullRequestString: getFullRequestString4326
             }
         );
-        I18n.translations.en.layers.name["nazwy"] = "Geoportal - nazwy PRNG";
+        if ("undefined" != typeof I18n.translations.en) {
+           I18n.translations.en.layers.name["nazwy"] = "Geoportal - nazwy PRNG";
+        }
+
+        if ("undefined" != typeof I18n.translations.pl) {
+           I18n.translations.pl.layers.name["nazwy"] = "Geoportal - nazwy PRNG";
+        }
 
         /// ,Zabudowa_A,Przem_gosp_A,KomplKom_A
         var geop_adresy2 = new OpenLayers.Layer.WMS(
@@ -247,7 +259,14 @@ function geoportal_run() {
                 getFullRequestString: getFullRequestString4326
             }
         );
-        I18n.translations.en.layers.name["adresy2"] = "Geoportal - adresy BDOT";
+
+        if ("undefined" != typeof I18n.translations.en) {
+           I18n.translations.en.layers.name["adresy2"] = "Geoportal - adresy BDOT";
+        }
+
+        if ("undefined" != typeof I18n.translations.pl) {
+           I18n.translations.pl.layers.name["adresy2"] = "Geoportal - adresy BDOT";
+        }
 
         console.log('Geoportal: adding layers');
         if(my_wazeMap.getLayersByName("Geoportal - orto").length == 0)
@@ -266,11 +285,12 @@ function geoportal_run() {
             if (a[0]) a[0].setZIndex(3);
             unsafeWindow.Waze.map.getLayersBy("uniqueName","satellite_imagery").first().setZIndex(1); // mapy Googla
             GEOPORTAL.OrtoTimer();
-        },500);
+        },1000);
     }
 
     GEOPORTAL.initBootstrap = function() {
         try {
+            console.log(typeof unsafeWindow.Waze.map.getLayersByName);
             if (undefined != typeof unsafeWindow.Waze.map.getLayersByName) {
                 this.init(unsafeWindow.Waze.map);
             } else {
@@ -280,6 +300,7 @@ function geoportal_run() {
                 },1000);
             }
         } catch (err) {
+            console.log(err);
             console.log("Geoportal: WME not initialized yet, trying again later.");
             setTimeout(function(){
                 GEOPORTAL.initBootstrap();
