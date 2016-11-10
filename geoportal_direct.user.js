@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            geoportal.gov.pl layers for WME without translating PROXY
-// @version         0.2.13.4
+// @version         0.2.13.5
 // @description     Displays layers from geoportal.gov.pl in WME
 // @grant           none
 // @include         https://*.waze.com/*/editor/*
@@ -29,7 +29,7 @@ function GEOPORTAL_bootstrap()
 }
 
 function geoportal_run() {
-    GEOPORTAL = { ver: "0.2.13.4" };
+    GEOPORTAL = { ver: "0.2.13.5" };
     GEOPORTAL.init = function(w)
     {
         console.log('Geoportal: start init ');
