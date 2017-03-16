@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            geoportal.gov.pl layers for WME without translating PROXY
-// @version         0.2.13.5
+// @version         0.2.14.0
 // @description     Displays layers from geoportal.gov.pl in WME
 // @grant           none
 // @include         https://*.waze.com/*/editor/*
@@ -8,7 +8,7 @@
 // @include         https://*.waze.com/map-editor/*
 // @include         https://*.waze.com/beta_editor/*
 // @include         https://editor-beta.waze.com/*
-// @copyright       2013,2014+, Patryk Ściborek, Paweł Pyrczak
+// @copyright       2013-2017+, Patryk Ściborek, Paweł Pyrczak
 // @run-at          document-end
 // ==/UserScript==
 
@@ -16,6 +16,11 @@
  * Source code: https://github.com/TKr/WME-geoportal
  */
 
+
+/* Changelog:
+ *
+ *  0.2.14.0 - fixed adding toggle on layer list (new WME version)
+ */
 function GEOPORTAL_bootstrap()
 {
     console.log("Geoportal: injecting code to page.");
@@ -29,10 +34,10 @@ function GEOPORTAL_bootstrap()
 }
 
 function geoportal_run() {
-    GEOPORTAL = { ver: "0.2.13.5" };
+    GEOPORTAL = { ver: "0.2.14.0" };
     GEOPORTAL.init = function(w)
     {
-        console.log('Geoportal: start init ');
+        console.log('Geoportal: Version ' + this.ver + ' init start');
 
         wms_service_orto="http://mapy.geoportal.gov.pl/wss/service/img/guest/ORTO/MapServer/WMSServer?"; // layer: Raster
         wms_service_orto_2="http://sdi.geoportal.gov.pl/wms_orto/wmservice.aspx?"; // layer: ORTOFOTO,ORTOFOTO_ISOK
@@ -40,11 +45,11 @@ function geoportal_run() {
         wms_service_bud="http://mapy.geoportal.gov.pl/wss/service/pub/guest/G2_BDOT_BUD_2010/MapServer/WMSServer?"; // budynki
         wms_bdot = "http://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycjaG2_TBD_WMS/MapServer/WMSServer?dpi=130&";
         var my_wazeMap = w;
-        if (typeof my_wazeMap == undefined) my_wazeMap = unsafeWindow.Waze.map;
+        if (typeof my_wazeMap == undefined) my_wazeMap = window.Waze.map;
 
-        var epsg900913 = new unsafeWindow.OpenLayers.Projection("EPSG:900913");
-        var epsg4326 =  new unsafeWindow.OpenLayers.Projection("EPSG:4326");
-        var tileSizeG = new unsafeWindow.OpenLayers.Size(512,512);
+        var epsg900913 = new window.OpenLayers.Projection("EPSG:900913");
+        var epsg4326 =  new window.OpenLayers.Projection("EPSG:4326");
+        var tileSizeG = new window.OpenLayers.Size(512,512);
 
         ConvTo2180 = function(p) {
             var D2R = 0.01745329251994329577;
@@ -174,11 +179,39 @@ function geoportal_run() {
                 newParams.TRANSPARENT = this.params.TRANSPARENT ? "TRUE" : "FALSE";
             }
 
-            return unsafeWindow.OpenLayers.Layer.Grid.prototype.getFullRequestString.apply(
+            return window.OpenLayers.Layer.Grid.prototype.getFullRequestString.apply(
                                                             this, arguments);
         }
 
-        var geop_orto = new unsafeWindow.OpenLayers.Layer.WMS(
+        geoportalAddLayer = function(layer) {
+            // Add layer entry in the new layer drawer
+            var displayGroupSelector = document.getElementById('layer-switcher-group_display');
+            if (displayGroupSelector != null) {
+                var displayGroup = displayGroupSelector.parentNode.parentNode.querySelector('.children');
+                var toggler = document.createElement('li');
+                var togglerContainer = document.createElement('div');
+                togglerContainer.className = 'controls-container toggler';
+                var checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = 'layer-switcher-geop_' + Math.random().toString(36).substring(7);
+                checkbox.className = 'toggle';
+                checkbox.addEventListener('click', function(e) {
+                  layer.setVisibility(e.target.checked);
+                });
+                togglerContainer.appendChild(checkbox);
+                var label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                var labelText = document.createElement('span');
+                labelText.className = 'label-text';
+                labelText.appendChild(document.createTextNode(layer.name));
+                label.appendChild(labelText);
+                togglerContainer.appendChild(label);
+                toggler.appendChild(togglerContainer);
+                displayGroup.appendChild(toggler);
+            }
+        }
+
+        var geop_orto = new window.OpenLayers.Layer.WMS(
             "Geoportal - ortofoto",
             wms_service_orto,
             {
@@ -272,8 +305,14 @@ function geoportal_run() {
         if(my_wazeMap.getLayersByName("Geoportal - orto").length == 0)
         {
             my_wazeMap.addLayer(geop_orto);
+            geoportalAddLayer(geop_orto);
+
             my_wazeMap.addLayer(geop_prng);
+            geoportalAddLayer(geop_prng);
+
             my_wazeMap.addLayer(geop_adresy2);
+            geoportalAddLayer(geop_adresy2);
+
             console.log('Geoportal: layers added');
             this.OrtoTimer();
         }
@@ -281,18 +320,17 @@ function geoportal_run() {
 
     GEOPORTAL.OrtoTimer = function() {
         setTimeout(function(){
-            var a = unsafeWindow.Waze.map.getLayersBy("uniqueName","orto1");
+            var a = window.Waze.map.getLayersBy("uniqueName","orto1");
             if (a[0]) a[0].setZIndex(3);
-            unsafeWindow.Waze.map.getLayersBy("uniqueName","satellite_imagery").first().setZIndex(1); // mapy Googla
+            window.Waze.map.getLayersBy("uniqueName","satellite_imagery").first().setZIndex(1); // mapy Googla
             GEOPORTAL.OrtoTimer();
         },1000);
     }
 
     GEOPORTAL.initBootstrap = function() {
         try {
-            console.log(typeof unsafeWindow.Waze.map.getLayersByName);
-            if (undefined != typeof unsafeWindow.Waze.map.getLayersByName) {
-                this.init(unsafeWindow.Waze.map);
+            if (document.getElementById('layer-switcher-group_display') != null) {
+                this.init(window.Waze.map);
             } else {
                 console.log("Geoportal: WME not initialized yet, trying again later.");
                 setTimeout(function(){
