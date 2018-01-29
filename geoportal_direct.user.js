@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            geoportal.gov.pl layers for WME without translating PROXY
-// @version         0.2.14.1
+// @version         0.2.15.0
 // @description     Displays layers from geoportal.gov.pl in WME
 // @grant           none
 // @include         https://*.waze.com/*/editor*
@@ -8,7 +8,7 @@
 // @include         https://*.waze.com/map-editor*
 // @include         https://*.waze.com/beta_editor*
 // @include         https://editor-beta.waze.com*
-// @copyright       2013-2017+, Patryk Ściborek, Paweł Pyrczak
+// @copyright       2013-2018+, Patryk Ściborek, Paweł Pyrczak
 // @run-at          document-end
 // ==/UserScript==
 
@@ -19,6 +19,7 @@
 
 /* Changelog:
  *
+ *  0.2.15.0 - fixes layers zIndex switching
  *  0.2.14.1 - fixes include addresses
  *  0.2.14.0 - fixed adding toggle on layer list (new WME version)
  */
@@ -35,7 +36,7 @@ function GEOPORTAL_bootstrap()
 }
 
 function geoportal_run() {
-    GEOPORTAL = { ver: "0.2.14.1" };
+    GEOPORTAL = { ver: "0.2.15.0" };
     GEOPORTAL.init = function(w)
     {
         console.log('Geoportal: Version ' + this.ver + ' init start');
@@ -322,8 +323,15 @@ function geoportal_run() {
     GEOPORTAL.OrtoTimer = function() {
         setTimeout(function(){
             var a = window.Waze.map.getLayersBy("uniqueName","orto1");
-            if (a[0]) a[0].setZIndex(3);
-            window.Waze.map.getLayersBy("uniqueName","satellite_imagery").first().setZIndex(1); // mapy Googla
+            if (a[0]) {
+                a[0].setZIndex(3);
+            }
+
+            var google_map = window.Waze.map.getLayersBy("uniqueName","satellite_imagery");
+            if (google_map[0]) {
+                google_map[0].setZIndex(1); // mapy Googla
+            }
+
             GEOPORTAL.OrtoTimer();
         },1000);
     }
