@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            geoportal.gov.pl layers for WME without translating PROXY
-// @version         0.2.15.0
+// @version         0.2.15.1
 // @description     Displays layers from geoportal.gov.pl in WME
 // @grant           none
 // @include         https://*.waze.com/*/editor*
@@ -19,6 +19,7 @@
 
 /* Changelog:
  *
+ *  0.2.15.1 - fixes window.Waze/window.W deprecation warnings
  *  0.2.15.0 - fixes layers zIndex switching
  *  0.2.14.1 - fixes include addresses
  *  0.2.14.0 - fixed adding toggle on layer list (new WME version)
@@ -36,7 +37,7 @@ function GEOPORTAL_bootstrap()
 }
 
 function geoportal_run() {
-    GEOPORTAL = { ver: "0.2.15.0" };
+    GEOPORTAL = { ver: "0.2.15.1" };
     GEOPORTAL.init = function(w)
     {
         console.log('Geoportal: Version ' + this.ver + ' init start');
@@ -47,7 +48,7 @@ function geoportal_run() {
         wms_service_bud="http://mapy.geoportal.gov.pl/wss/service/pub/guest/G2_BDOT_BUD_2010/MapServer/WMSServer?"; // budynki
         wms_bdot = "http://mapy.geoportal.gov.pl/wss/service/pub/guest/kompozycjaG2_TBD_WMS/MapServer/WMSServer?dpi=130&";
         var my_wazeMap = w;
-        if (typeof my_wazeMap == undefined) my_wazeMap = window.Waze.map;
+        if (typeof my_wazeMap == undefined) my_wazeMap = window.W.map;
 
         var epsg900913 = new window.OpenLayers.Projection("EPSG:900913");
         var epsg4326 =  new window.OpenLayers.Projection("EPSG:4326");
@@ -322,12 +323,12 @@ function geoportal_run() {
 
     GEOPORTAL.OrtoTimer = function() {
         setTimeout(function(){
-            var a = window.Waze.map.getLayersBy("uniqueName","orto1");
+            var a = window.W.map.getLayersBy("uniqueName","orto1");
             if (a[0]) {
                 a[0].setZIndex(3);
             }
 
-            var google_map = window.Waze.map.getLayersBy("uniqueName","satellite_imagery");
+            var google_map = window.W.map.getLayersBy("uniqueName","satellite_imagery");
             if (google_map[0]) {
                 google_map[0].setZIndex(1); // mapy Googla
             }
@@ -339,7 +340,7 @@ function geoportal_run() {
     GEOPORTAL.initBootstrap = function() {
         try {
             if (document.getElementById('layer-switcher-group_display') != null) {
-                this.init(window.Waze.map);
+                this.init(window.W.map);
             } else {
                 console.log("Geoportal: WME not initialized yet, trying again later.");
                 setTimeout(function(){
